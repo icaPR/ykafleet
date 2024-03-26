@@ -29,6 +29,7 @@ export function Arrival() {
 
   const realm = useRealm();
   const histotic = useObject(Historic, new BSON.UUID(id) as unknown as string);
+  const title = histotic?.status === "departute" ? "Chegada" : "Detalhes";
 
   function handleRemoveVehicleUsage() {
     Alert.alert("Cancelar", "Cancelar a utilização veículo?", [
@@ -72,17 +73,22 @@ export function Arrival() {
 
   return (
     <Container>
-      <Header title={"Chegada"} />
+      <Header title={title} />
       <Content>
         <Label>Placa do veículo</Label>
         <LicensePlate>{histotic?.license_plate}</LicensePlate>
 
         <Label>Finalidade</Label>
         <Description>{histotic?.description}</Description>
-        <Footer>
-          <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
-          <Button title={"Registrar Chegada"} onPress={handleArrivalRegister} />
-        </Footer>
+        {histotic?.status === "departure" && (
+          <Footer>
+            <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
+            <Button
+              title={"Registrar Chegada"}
+              onPress={handleArrivalRegister}
+            />
+          </Footer>
+        )}
       </Content>
     </Container>
   );
