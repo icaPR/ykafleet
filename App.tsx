@@ -10,6 +10,8 @@ import { AppProvider, UserProvider } from "@realm/react";
 
 import theme from "./src/theme";
 
+import "./src/libs/dayjs";
+
 import { SignIn } from "./src/screens/SignIn";
 import { Loading } from "./src/components/Loading";
 import { StatusBar } from "react-native";
