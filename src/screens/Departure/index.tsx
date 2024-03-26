@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Button } from "../../components/Button";
-import { DepartureHeader } from "../../components/DepartureHeader";
+import { Header } from "../../components/Header";
 import { LicensePlateInput } from "../../components/LicensePlateInput";
 import { TextAreaInput } from "../../components/TextAreaInput";
 import { Container, Content } from "./styles";
@@ -72,7 +72,7 @@ export function Departure() {
 
   return (
     <Container>
-      <DepartureHeader title={"Saída"} />
+      <Header title={"Saída"} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardAvoidingView}>
         <ScrollView>
           <Content>

@@ -9,7 +9,7 @@ type Props = {
   title: string;
 };
 
-export function DepartureHeader({ title }: Props) {
+export function Header({ title }: Props) {
   const { COLORS } = useTheme();
   const insets = useSafeAreaInsets();
 
