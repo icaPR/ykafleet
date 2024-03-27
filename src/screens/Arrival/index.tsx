@@ -80,16 +80,13 @@ export function Arrival() {
 
         <Label>Finalidade</Label>
         <Description>{histotic?.description}</Description>
-        {histotic?.status === "departure" && (
-          <Footer>
-            <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
-            <Button
-              title={"Registrar Chegada"}
-              onPress={handleArrivalRegister}
-            />
-          </Footer>
-        )}
       </Content>
+      {histotic?.status === "departure" && (
+        <Footer>
+          <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
+          <Button title={"Registrar Chegada"} onPress={handleArrivalRegister} />
+        </Footer>
+      )}
     </Container>
   );
 }
