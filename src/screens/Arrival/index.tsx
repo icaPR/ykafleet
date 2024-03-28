@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "../../components/Header";
 import {
+  AsyncMessage,
   Container,
   Content,
   Description,
@@ -16,20 +17,23 @@ import { Historic } from "../../libs/realm/schemas/Historic";
 import { useObject, useRealm } from "../../libs/realm";
 import { BSON } from "realm";
 import { Alert } from "react-native";
+import { getLastSyncTimestamp } from "../../libs/asyncStorage/syncStorage";
 
 type RoutePropsProps = {
   id: string;
 };
 
 export function Arrival() {
+  const [dataNotSynced, setDataNotSynced] = useState(false);
+
   const route = useRoute();
   const { goBack } = useNavigation();
 
   const { id } = route.params as RoutePropsProps;
 
   const realm = useRealm();
-  const histotic = useObject(Historic, new BSON.UUID(id) as unknown as string);
-  const title = histotic?.status === "departute" ? "Chegada" : "Detalhes";
+  const historic = useObject(Historic, new BSON.UUID(id) as unknown as string);
+  const title = historic?.status === "departute" ? "Chegada" : "Detalhes";
 
   function handleRemoveVehicleUsage() {
     Alert.alert("Cancelar", "Cancelar a utilização veículo?", [
@@ -46,22 +50,22 @@ export function Arrival() {
 
   function removeVehicleUsage() {
     realm.write(() => {
-      realm.delete(histotic);
+      realm.delete(historic);
     });
     goBack();
   }
 
   function handleArrivalRegister() {
     try {
-      if (!histotic) {
+      if (!historic) {
         return Alert.alert(
           "Error",
           "Não foi possível obter os dados para registrar a chegada do veículo."
         );
       }
       realm.write(() => {
-        histotic.status = "arrival";
-        histotic.updated_at = new Date();
+        historic.status = "arrival";
+        historic.updated_at = new Date();
       });
       Alert.alert("Chegada", "Chegada foi registrada com sucesso!");
       goBack();
@@ -71,21 +75,36 @@ export function Arrival() {
     }
   }
 
+  useEffect(() => {
+    getLastSyncTimestamp().then((response) =>
+      setDataNotSynced(historic!.updated_at.getTime() > response)
+    );
+  }, []);
+
   return (
     <Container>
       <Header title={title} />
       <Content>
         <Label>Placa do veículo</Label>
-        <LicensePlate>{histotic?.license_plate}</LicensePlate>
+        <LicensePlate>{historic?.license_plate}</LicensePlate>
 
         <Label>Finalidade</Label>
-        <Description>{histotic?.description}</Description>
+        <Description>{historic?.description}</Description>
+        {historic?.status === "departure" && (
+          <Footer>
+            <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
+            <Button
+              title={"Registrar Chegada"}
+              onPress={handleArrivalRegister}
+            />
+          </Footer>
+        )}
       </Content>
-      {histotic?.status === "departure" && (
-        <Footer>
-          <ButtonIcon icon={X} onPress={handleRemoveVehicleUsage} />
-          <Button title={"Registrar Chegada"} onPress={handleArrivalRegister} />
-        </Footer>
+      {dataNotSynced && (
+        <AsyncMessage>
+          Sincronização da
+          {historic?.status === "departure" ? " partida " : " chegada "} pedente
+        </AsyncMessage>
       )}
     </Container>
   );
