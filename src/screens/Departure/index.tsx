@@ -19,12 +19,15 @@ import {
 } from "expo-location";
 import { getAddressLocation } from "../../utils/getAddressLocation";
 import { Loading } from "../../components/Loading";
+import { LocationInfo } from "../../components/LocationInfo";
+import { Car } from "phosphor-react-native";
 
 export function Departure() {
   const [description, setDescription] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+  const [currentAddress, setCurrentAddress] = useState<string | null>(null);
 
   const [locationForegroundPermission, requestLocationForegroundPermission] =
     useForegroundPermissions();
@@ -89,7 +92,11 @@ export function Departure() {
       { accuracy: LocationAccuracy.High, timeInterval: 1000 },
       (location) => {
         getAddressLocation(location.coords)
-          .then((response) => console.log(response))
+          .then((address) => {
+            if (address) {
+              setCurrentAddress(address);
+            }
+          })
           .finally(() => setIsLoadingLocation(false));
       }
     ).then((response) => (subscription = response));
@@ -125,6 +132,14 @@ export function Departure() {
       <KeyboardAwareScrollView extraHeight={100}>
         <ScrollView>
           <Content>
+            {currentAddress && (
+              <LocationInfo
+                icon={Car}
+                label={"Localização atual"}
+                description={currentAddress}
+              />
+            )}
+
             <LicensePlateInput
               ref={licensePlateRef}
               label={"Placa do veículo"}
