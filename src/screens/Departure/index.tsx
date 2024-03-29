@@ -11,12 +11,20 @@ import { Historic } from "../../libs/realm/schemas/Historic";
 import { useRealm } from "../../libs/realm";
 import { useNavigation } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { useForegroundPermissions } from "expo-location";
+import {
+  LocationAccuracy,
+  useForegroundPermissions,
+  watchPositionAsync,
+  LocationSubscription,
+} from "expo-location";
+import { getAddressLocation } from "../../utils/getAddressLocation";
+import { Loading } from "../../components/Loading";
 
 export function Departure() {
   const [description, setDescription] = useState("");
   const [licensePlate, setLicensePlate] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true);
 
   const [locationForegroundPermission, requestLocationForegroundPermission] =
     useForegroundPermissions();
@@ -71,6 +79,28 @@ export function Departure() {
     requestLocationForegroundPermission();
   }, []);
 
+  useEffect(() => {
+    if (!locationForegroundPermission?.granted) {
+      return;
+    }
+
+    let subscription: LocationSubscription;
+    watchPositionAsync(
+      { accuracy: LocationAccuracy.High, timeInterval: 1000 },
+      (location) => {
+        getAddressLocation(location.coords)
+          .then((response) => console.log(response))
+          .finally(() => setIsLoadingLocation(false));
+      }
+    ).then((response) => (subscription = response));
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, [locationForegroundPermission]);
+
   if (!locationForegroundPermission?.granted) {
     return (
       <Container>
@@ -84,6 +114,11 @@ export function Departure() {
       </Container>
     );
   }
+
+  if (isLoadingLocation) {
+    return <Loading />;
+  }
+
   return (
     <Container>
       <Header title={"Saída"} />
