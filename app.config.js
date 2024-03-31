@@ -21,6 +21,9 @@ module.exports = {
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API,
       },
+      infoPlist: {
+        UIBackgroundModes: ["location"],
+      },
     },
     android: {
       adaptiveIcon: {
@@ -33,6 +36,11 @@ module.exports = {
           apiKey: process.env.GOOGLE_MAPS_API,
         },
       },
+      permissions: [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+      ],
     },
     web: {
       favicon: "./assets/favicon.png",
