@@ -14,13 +14,16 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import {
   LocationAccuracy,
   useForegroundPermissions,
+  requestBackgroundPermissionsAsync,
   watchPositionAsync,
   LocationSubscription,
+  LocationObjectCoords,
 } from "expo-location";
 import { getAddressLocation } from "../../utils/getAddressLocation";
 import { Loading } from "../../components/Loading";
 import { LocationInfo } from "../../components/LocationInfo";
 import { Car } from "phosphor-react-native";
+import { Map } from "../../components/Map";
 
 export function Departure() {
   const [description, setDescription] = useState("");
@@ -28,6 +31,8 @@ export function Departure() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [currentAddress, setCurrentAddress] = useState<string | null>(null);
+  const [currentCoords, setCurrentCoords] =
+    useState<LocationObjectCoords | null>(null);
 
   const [locationForegroundPermission, requestLocationForegroundPermission] =
     useForegroundPermissions();
@@ -40,7 +45,7 @@ export function Departure() {
   const descriptionRef = useRef<TextInput>(null);
   const licensePlateRef = useRef<TextInput>(null);
 
-  function handleDepartureRegister() {
+  async function handleDepartureRegister() {
     try {
       if (!licencePlateValidate(licensePlate)) {
         licensePlateRef.current?.focus();
@@ -57,7 +62,25 @@ export function Departure() {
           "Por favor, informe a finalidade do veículo."
         );
       }
+
+      if (!currentCoords?.latitude && !currentCoords?.longitude) {
+        return Alert.alert(
+          "Localização",
+          "Não foi possível obter a localização atual. Tente novamente!"
+        );
+      }
+
       setIsRegistering(true);
+
+      const backgroundPermissions = await requestBackgroundPermissionsAsync();
+
+      if (!backgroundPermissions.granted) {
+        setIsRegistering(false);
+        return Alert.alert(
+          "Localização",
+          'É nescessário permitir que o App tenha acesso a localização em segundo plano. Acesse as configurações e habilite "Permitir o tempo todo".'
+        );
+      }
 
       realm.write(() => {
         realm.create(
@@ -91,6 +114,7 @@ export function Departure() {
     watchPositionAsync(
       { accuracy: LocationAccuracy.High, timeInterval: 1000 },
       (location) => {
+        setCurrentCoords(location.coords);
         getAddressLocation(location.coords)
           .then((address) => {
             if (address) {
@@ -131,6 +155,7 @@ export function Departure() {
       <Header title={"Saída"} />
       <KeyboardAwareScrollView extraHeight={100}>
         <ScrollView>
+          {currentCoords && <Map coordinates={[currentCoords]} />}
           <Content>
             {currentAddress && (
               <LocationInfo
