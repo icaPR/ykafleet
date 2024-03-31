@@ -21,7 +21,7 @@ export const Input = styled(TextInput)`
   text-align: center;
 
   font-family: ${({ theme }) => theme.FONT_FAMILY.BOLD};
-  font-size: ${({ theme }) => theme.FONT_SIZE.XXL}px;
+  font-size: ${({ theme }) => theme.FONT_SIZE.XXXL}px;
 
   color: ${({ theme }) => theme.COLORS.GRAY_200};
 `;
