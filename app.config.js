@@ -19,7 +19,7 @@ module.exports = {
     ios: {
       supportsTablet: true,
       config: {
-        googleMapsApiKey: process.env.GOOGLE_API_KEY,
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API,
       },
     },
     android: {
@@ -30,7 +30,7 @@ module.exports = {
       package: "com.ykapr.ykafleet",
       config: {
         googleMaps: {
-          apiKey: process.env.GOOGLE_API_KEY,
+          apiKey: process.env.GOOGLE_MAPS_API,
         },
       },
     },
