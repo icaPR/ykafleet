@@ -18,6 +18,10 @@ import { useObject, useRealm } from "../../libs/realm";
 import { BSON } from "realm";
 import { Alert } from "react-native";
 import { getLastSyncTimestamp } from "../../libs/asyncStorage/syncStorage";
+import { stopLocationTask } from "../../tasks/backgroundLocarionTask";
+import { getStorageLocations } from "../../libs/asyncStorage/locationStorage";
+import { Map } from "../../components/Map";
+import { LatLng } from "react-native-maps";
 
 type RoutePropsProps = {
   id: string;
@@ -25,6 +29,7 @@ type RoutePropsProps = {
 
 export function Arrival() {
   const [dataNotSynced, setDataNotSynced] = useState(false);
+  const [coordinates, setCoordinates] = useState<LatLng[]>([]);
 
   const route = useRoute();
   const { goBack } = useNavigation();
@@ -48,14 +53,15 @@ export function Arrival() {
     ]);
   }
 
-  function removeVehicleUsage() {
+  async function removeVehicleUsage() {
     realm.write(() => {
       realm.delete(historic);
     });
+    await stopLocationTask();
     goBack();
   }
 
-  function handleArrivalRegister() {
+  async function handleArrivalRegister() {
     try {
       if (!historic) {
         return Alert.alert(
@@ -63,6 +69,9 @@ export function Arrival() {
           "Não foi possível obter os dados para registrar a chegada do veículo."
         );
       }
+
+      await stopLocationTask();
+
       realm.write(() => {
         historic.status = "arrival";
         historic.updated_at = new Date();
@@ -75,15 +84,26 @@ export function Arrival() {
     }
   }
 
+  async function getLocationInfo() {
+    if (!historic) {
+      return;
+    }
+    const lastSync = await getLastSyncTimestamp();
+    const updateAt = historic!.updated_at.getTime();
+    setDataNotSynced(updateAt > lastSync);
+
+    const locationsStorage = await getStorageLocations();
+    setCoordinates(locationsStorage);
+  }
+
   useEffect(() => {
-    getLastSyncTimestamp().then((response) =>
-      setDataNotSynced(historic!.updated_at.getTime() > response)
-    );
-  }, []);
+    getLocationInfo();
+  }, [historic]);
 
   return (
     <Container>
       <Header title={title} />
+      {coordinates.length > 0 && <Map coordinates={coordinates} />}
       <Content>
         <Label>Placa do veículo</Label>
         <LicensePlate>{historic?.license_plate}</LicensePlate>
