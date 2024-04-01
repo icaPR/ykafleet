@@ -22,6 +22,10 @@ import { stopLocationTask } from "../../tasks/backgroundLocarionTask";
 import { getStorageLocations } from "../../libs/asyncStorage/locationStorage";
 import { Map } from "../../components/Map";
 import { LatLng } from "react-native-maps";
+import { getAddressLocation } from "../../utils/getAddressLocation";
+import { LocationInfoProps } from "../../components/LocationInfo";
+import dayjs from "dayjs";
+import { Locations } from "../../components/Locations";
 
 type RoutePropsProps = {
   id: string;
@@ -30,6 +34,10 @@ type RoutePropsProps = {
 export function Arrival() {
   const [dataNotSynced, setDataNotSynced] = useState(false);
   const [coordinates, setCoordinates] = useState<LatLng[]>([]);
+  const [departure, setDeparture] = useState<LocationInfoProps>(
+    {} as LocationInfoProps
+  );
+  const [arrival, setArrival] = useState<LocationInfoProps | null>(null);
 
   const route = useRoute();
   const { goBack } = useNavigation();
@@ -107,6 +115,27 @@ export function Arrival() {
       });
       setCoordinates(coords ?? []);
     }
+    if (historic?.coords[0]) {
+      const departureStreetName = await getAddressLocation(historic?.coords[0]);
+      setDeparture({
+        label: `Saindo em ${departureStreetName ?? ""}`,
+        description: dayjs(new Date(historic.coords[0].timestamp)).format(
+          "DD/MM/YYYY [ás] HH:mm"
+        ),
+      });
+    }
+
+    if (historic?.status === "arrival") {
+      const arrivalStreetName = await getAddressLocation(
+        historic.coords[historic.coords.length - 1]
+      );
+      setArrival({
+        label: `Chegando em ${arrivalStreetName ?? ""}`,
+        description: dayjs(
+          new Date(historic.coords[historic.coords.length - 1].timestamp)
+        ).format("DD/MM/YYYY [ás] HH:mm"),
+      });
+    }
   }
 
   useEffect(() => {
@@ -118,6 +147,7 @@ export function Arrival() {
       <Header title={title} />
       {coordinates.length > 0 && <Map coordinates={coordinates} />}
       <Content>
+        <Locations departure={departure} arrival={arrival} />
         <Label>Placa do veículo</Label>
         <LicensePlate>{historic?.license_plate}</LicensePlate>
         <Label>Finalidade</Label>
