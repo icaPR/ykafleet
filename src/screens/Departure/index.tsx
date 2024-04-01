@@ -3,7 +3,7 @@ import { Button } from "../../components/Button";
 import { Header } from "../../components/Header";
 import { LicensePlateInput } from "../../components/LicensePlateInput";
 import { TextAreaInput } from "../../components/TextAreaInput";
-import { Container, Content, Message } from "./styles";
+import { Container, Content, Message, MessageContent } from "./styles";
 import { ScrollView, TextInput, Alert } from "react-native";
 import { licencePlateValidate } from "../../utils/licensePlateValidate";
 import { useUser } from "@realm/react";
@@ -25,6 +25,7 @@ import { LocationInfo } from "../../components/LocationInfo";
 import { Car } from "phosphor-react-native";
 import { Map } from "../../components/Map";
 import { startLocationTask } from "../../tasks/backgroundLocarionTask";
+import { openSettings } from "../../utils/openSettings";
 
 export function Departure() {
   const [description, setDescription] = useState("");
@@ -79,7 +80,8 @@ export function Departure() {
         setIsRegistering(false);
         return Alert.alert(
           "Localização",
-          'É nescessário permitir que o App tenha acesso a localização em segundo plano. Acesse as configurações e habilite "Permitir o tempo todo".'
+          'É nescessário permitir que o App tenha acesso a localização em segundo plano. Acesse as configurações e habilite "Permitir o tempo todo".',
+          [{ text: "Abrir configurações", onPress: openSettings }]
         );
       }
       await startLocationTask();
@@ -145,12 +147,15 @@ export function Departure() {
     return (
       <Container>
         <Header title={"Saída"} />
-        <Message>
-          Para registrar uma saida permita o acesso à sua localização. Permita o
-          acesso à sua localização, por favor, vá até as configurações do seu
-          dispositivo e ative a opção de localização para o nosso aplicativo.
-          Obrigado!
-        </Message>
+        <MessageContent>
+          <Message>
+            Para registrar uma saida permita o acesso à sua localização. Permita
+            o acesso à sua localização, por favor, vá até as configurações do
+            seu dispositivo e ative a opção de localização para o nosso
+            aplicativo. Obrigado!
+          </Message>
+          <Button title="Abrir Configurações" onPress={openSettings} />
+        </MessageContent>
       </Container>
     );
   }
