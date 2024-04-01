@@ -69,13 +69,16 @@ export function Arrival() {
           "Não foi possível obter os dados para registrar a chegada do veículo."
         );
       }
-
-      await stopLocationTask();
+      const locations = await getStorageLocations();
 
       realm.write(() => {
         historic.status = "arrival";
         historic.updated_at = new Date();
+        historic.coords.push(...locations);
       });
+
+      await stopLocationTask();
+
       Alert.alert("Chegada", "Chegada foi registrada com sucesso!");
       goBack();
     } catch (error) {
@@ -92,8 +95,18 @@ export function Arrival() {
     const updateAt = historic!.updated_at.getTime();
     setDataNotSynced(updateAt > lastSync);
 
-    const locationsStorage = await getStorageLocations();
-    setCoordinates(locationsStorage);
+    if (historic?.status === "departure") {
+      const locationsStorage = await getStorageLocations();
+      setCoordinates(locationsStorage);
+    } else {
+      const coords = historic?.coords.map((coord) => {
+        return {
+          latitude: coord.latitude,
+          longitude: coord.longitude,
+        };
+      });
+      setCoordinates(coords ?? []);
+    }
   }
 
   useEffect(() => {
@@ -107,7 +120,6 @@ export function Arrival() {
       <Content>
         <Label>Placa do veículo</Label>
         <LicensePlate>{historic?.license_plate}</LicensePlate>
-
         <Label>Finalidade</Label>
         <Description>{historic?.description}</Description>
         {historic?.status === "departure" && (
