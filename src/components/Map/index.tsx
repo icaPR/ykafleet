@@ -22,7 +22,7 @@ export function Map({ coordinates, ...rest }: Props) {
   async function onMapLoaded() {
     if (coordinates.length > 1) {
       mapRef.current?.fitToSuppliedMarkers(["departure", "arrival"], {
-        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+        edgePadding: { top: 100, right: 50, bottom: 50, left: 50 },
       });
     }
   }

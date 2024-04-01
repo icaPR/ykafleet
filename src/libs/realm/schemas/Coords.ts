@@ -1,5 +1,4 @@
 import { Realm } from "@realm/react";
-import { Object } from "realm";
 
 export type CoordsSchemaProps = {
   latitude: number;
